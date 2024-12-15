@@ -1,0 +1,44 @@
+import { eq } from "drizzle-orm";
+import { db } from "../db";
+import { tasks, taskStatuses } from "../db/schema";
+import type { NewTask, NewTaskStatus } from "../types";
+
+export const tasksService = {
+  async getAll() {
+    return db.select().from(tasks);
+  },
+
+  async getById(id: string) {
+    const results = await db.select().from(tasks).where(eq(tasks.id, id));
+    return results[0];
+  },
+
+  async create(data: NewTask) {
+    const result = await db.insert(tasks).values(data).returning();
+    return result[0];
+  },
+
+  async update(id: string, data: Partial<NewTask>) {
+    const result = await db
+      .update(tasks)
+      .set(data)
+      .where(eq(tasks.id, id))
+      .returning();
+    return result[0];
+  },
+
+  async delete(id: string) {
+    return db.delete(tasks).where(eq(tasks.id, id));
+  },
+};
+
+export const taskStatusesService = {
+  async getAll() {
+    return db.select().from(taskStatuses);
+  },
+
+  async create(data: NewTaskStatus) {
+    const result = await db.insert(taskStatuses).values(data).returning();
+    return result[0];
+  },
+};
