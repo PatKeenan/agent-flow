@@ -1,51 +1,12 @@
-import {
-  createRootRoute,
-  createRoute,
-  createRouter,
-} from "@tanstack/react-router";
-import App from "./App";
-import Dashboard from "./components/dashboard/Dashboard";
-import Calendar from "./components/calendar/Calendar";
-import TaskBoard from "./components/tasks/TaskBoard";
-import { apiClient } from "./lib/api";
+import { createRouter } from "@tanstack/react-router";
 
-// Root route
-const rootRoute = createRootRoute({
-  component: App,
-});
-
-// Define routes
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/",
-  component: Dashboard,
-});
-
-const calendarRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/calendar",
-  component: Calendar,
-});
-
-const tasksRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/tasks",
-  component: TaskBoard,
-  loader: async () => {
-    // Example of data loading
-    // const tasks = await apiClient.tasks.getAll();
-    return { tasks: [] };
-  },
-});
-
-const clientsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/clients",
-  loader: async () => {
-    const clients = await apiClient.clients.$get();
-    return { clients };
-  },
-});
+import { calendarRoute } from "@/routes/caledar-route";
+import { indexRoute } from "@/routes/index-route";
+import { tasksRoute } from "@/routes/tasks-route";
+import { clientsRoute } from "@/routes/clients-route";
+import { rootRoute } from "@/routes/_root-route";
+import { showingsRoute } from "@/routes/showings-route";
+import { salesRoute } from "./routes/sales-route";
 
 // Create and export the router
 const routeTree = rootRoute.addChildren([
@@ -53,6 +14,8 @@ const routeTree = rootRoute.addChildren([
   calendarRoute,
   tasksRoute,
   clientsRoute,
+  showingsRoute,
+  salesRoute,
 ]);
 
 export const router = createRouter({ routeTree });

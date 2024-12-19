@@ -5,7 +5,29 @@ import type { NewTask, NewTaskStatus } from "../types";
 
 export const tasksService = {
   async getAll() {
-    return db.select().from(tasks);
+    //return db.select().from(tasks);
+    return [
+      {
+        title: "Property viewing at 123 Oak Street",
+        time: "2:00 PM",
+        completed: false,
+      },
+      {
+        title: "Client meeting with John Smith",
+        time: "3:30 PM",
+        completed: false,
+      },
+      {
+        title: "Update listing photos for 456 Pine Ave",
+        time: "4:00 PM",
+        completed: true,
+      },
+      {
+        title: "Follow up with potential buyers",
+        time: "5:00 PM",
+        completed: false,
+      },
+    ];
   },
 
   async getById(id: string) {

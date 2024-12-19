@@ -6,6 +6,8 @@ import {
   CheckSquare,
   Settings,
   LogOut,
+  MapIcon,
+  DollarSign,
 } from "lucide-react";
 
 const navItems = [
@@ -13,11 +15,13 @@ const navItems = [
   { icon: Calendar, label: "Calendar", to: "/calendar" },
   { icon: Users, label: "Clients", to: "/clients" },
   { icon: CheckSquare, label: "Tasks", to: "/tasks" },
+  { icon: MapIcon, label: "Showings", to: "/showings" },
+  { icon: DollarSign, label: "Sales", to: "/sales" },
 ];
 
 export default function Sidebar() {
   return (
-    <div className="hidden lg:flex flex-col h-screen w-64 bg-blue-600 text-white p-6">
+    <div className="hidden lg:flex flex-col h-screen w-64 bg-sidebar-bg text-white p-6">
       <div className="mb-10">
         <h1 className="text-2xl font-bold">AgentFlow</h1>
       </div>

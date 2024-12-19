@@ -1,9 +1,8 @@
-import React from 'react';
-import { Search, Bell, User } from 'lucide-react';
+import { Search, Bell, User } from "lucide-react";
 
 export default function Header() {
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className=" border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center flex-1">
           <div className="lg:hidden">
@@ -11,7 +10,10 @@ export default function Header() {
           </div>
           <div className="max-w-md w-full ml-8 hidden lg:block">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Search..."
@@ -20,7 +22,7 @@ export default function Header() {
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <button className="relative p-2 hover:bg-gray-100 rounded-lg">
             <Bell size={20} className="text-gray-600" />
