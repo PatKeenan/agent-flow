@@ -1,7 +1,6 @@
+import * as React from "react";
 import { rootRoute } from "./_root-route";
 import { createRoute } from "@tanstack/react-router";
-
-import { useState } from "react";
 import {
   addDays,
   addMonths,
@@ -15,6 +14,7 @@ import { CalendarHeader } from "@/components/CalendarHeader";
 import { DayView } from "@/components/DayView";
 import { WeekView } from "@/components/WeekView";
 import { MonthView } from "@/components/MonthView";
+import { EventDialog } from "@/components/EventDialog";
 import type { ViewType, CalendarEvent } from "@/components/calender-types";
 
 export const calendarRoute = createRoute({
@@ -42,8 +42,11 @@ const sampleEvents: CalendarEvent[] = [
 ];
 
 function Calendar() {
-  const [view, setView] = useState<ViewType>("month");
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [view, setView] = React.useState<ViewType>("month");
+  const [currentDate, setCurrentDate] = React.useState(new Date());
+  const [events, setEvents] = React.useState<CalendarEvent[]>(sampleEvents);
+  const [isEventDialogOpen, setIsEventDialogOpen] = React.useState(false);
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>();
 
   const handlePrevious = () => {
     switch (view) {
@@ -77,6 +80,19 @@ function Calendar() {
     setCurrentDate(new Date());
   };
 
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    setIsEventDialogOpen(true);
+  };
+
+  const handleSaveEvent = (newEvent: Omit<CalendarEvent, "id">) => {
+    const event: CalendarEvent = {
+      ...newEvent,
+      id: crypto.randomUUID(),
+    };
+    setEvents([...events, event]);
+  };
+
   return (
     <div className="flex flex-col h-full p-4">
       <CalendarHeader
@@ -87,11 +103,33 @@ function Calendar() {
         onNext={handleNext}
         onToday={handleToday}
       />
-      {view === "day" && <DayView date={currentDate} events={sampleEvents} />}
-      {view === "week" && <WeekView date={currentDate} events={sampleEvents} />}
-      {view === "month" && (
-        <MonthView date={currentDate} events={sampleEvents} />
+      {view === "day" && (
+        <DayView
+          date={currentDate}
+          events={events}
+          onDateSelect={handleDateSelect}
+        />
       )}
+      {view === "week" && (
+        <WeekView
+          date={currentDate}
+          events={events}
+          onDateSelect={handleDateSelect}
+        />
+      )}
+      {view === "month" && (
+        <MonthView
+          date={currentDate}
+          events={events}
+          onDateSelect={handleDateSelect}
+        />
+      )}
+      <EventDialog
+        isOpen={isEventDialogOpen}
+        onClose={() => setIsEventDialogOpen(false)}
+        onSave={handleSaveEvent}
+        initialDate={selectedDate}
+      />
     </div>
   );
 }

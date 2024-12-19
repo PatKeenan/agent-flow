@@ -1,17 +1,37 @@
 import { format, addDays, startOfWeek, isSameDay } from "date-fns";
 import { CalendarEvent } from "./calender-types";
+import { Button } from "./ui/button";
+import { Plus } from "lucide-react";
 
 interface WeekViewProps {
   date: Date;
   events: CalendarEvent[];
+  onDateSelect: (date: Date) => void;
 }
 
-export function WeekView({ date, events }: WeekViewProps) {
+export function WeekView({ date, events, onDateSelect }: WeekViewProps) {
   const weekStart = startOfWeek(date);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
+  const getEventsForDay = (day: Date) => {
+    return events.filter((event) => {
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
+      return (
+        (eventStart <= day && eventEnd >= day) || // Event spans over this day
+        isSameDay(eventStart, day) // Event starts on this day
+      );
+    });
+  };
+
   return (
     <div className="flex-1 overflow-y-auto">
+      <div className="p-4">
+        <Button onClick={() => onDateSelect(date)} className="mb-4">
+          <Plus className="h-4 w-4 mr-2" />
+          New Event
+        </Button>
+      </div>
       <div className="grid grid-cols-7 border-b">
         {days.map((day) => (
           <div
@@ -31,14 +51,16 @@ export function WeekView({ date, events }: WeekViewProps) {
       </div>
       <div className="grid grid-cols-7 h-full">
         {days.map((day) => {
-          const dayEvents = events.filter((event) =>
-            isSameDay(new Date(event.start), day)
-          );
+          const dayEvents = getEventsForDay(day);
 
           return (
             <div
               key={day.toString()}
-              className="border-r min-h-[600px] relative"
+              className="border-r min-h-[600px] relative cursor-pointer hover:bg-gray-50"
+              onClick={() => onDateSelect(day)}
+              onKeyDown={(e) => e.key === "Enter" && onDateSelect(day)}
+              role="button"
+              tabIndex={0}
             >
               {dayEvents.map((event) => (
                 <div
