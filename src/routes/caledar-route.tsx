@@ -41,48 +41,62 @@ const sampleEvents: CalendarEvent[] = [
   },
 ];
 
+type CalendarState = {
+  view: ViewType;
+  currentDate: Date;
+  events: CalendarEvent[];
+  isEventDialogOpen: boolean;
+  selectedDate: Date | undefined;
+};
+
+const calendarReducer = (
+  state: CalendarState,
+  action: Partial<CalendarState>
+) => ({ ...state, ...action });
+
 function Calendar() {
-  const [view, setView] = React.useState<ViewType>("month");
-  const [currentDate, setCurrentDate] = React.useState(new Date());
-  const [events, setEvents] = React.useState<CalendarEvent[]>(sampleEvents);
-  const [isEventDialogOpen, setIsEventDialogOpen] = React.useState(false);
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>();
+  const [state, dispatch] = React.useReducer(calendarReducer, {
+    view: "month",
+    currentDate: new Date(),
+    events: sampleEvents,
+    isEventDialogOpen: false,
+    selectedDate: undefined,
+  });
 
   const handlePrevious = () => {
-    switch (view) {
+    switch (state.view) {
       case "day":
-        setCurrentDate(subDays(currentDate, 1));
+        dispatch({ currentDate: subDays(state.currentDate, 1) });
         break;
       case "week":
-        setCurrentDate(subWeeks(currentDate, 1));
+        dispatch({ currentDate: subWeeks(state.currentDate, 1) });
         break;
       case "month":
-        setCurrentDate(subMonths(currentDate, 1));
+        dispatch({ currentDate: subMonths(state.currentDate, 1) });
         break;
     }
   };
 
   const handleNext = () => {
-    switch (view) {
+    switch (state.view) {
       case "day":
-        setCurrentDate(addDays(currentDate, 1));
+        dispatch({ currentDate: addDays(state.currentDate, 1) });
         break;
       case "week":
-        setCurrentDate(addWeeks(currentDate, 1));
+        dispatch({ currentDate: addWeeks(state.currentDate, 1) });
         break;
       case "month":
-        setCurrentDate(addMonths(currentDate, 1));
+        dispatch({ currentDate: addMonths(state.currentDate, 1) });
         break;
     }
   };
 
   const handleToday = () => {
-    setCurrentDate(new Date());
+    dispatch({ currentDate: new Date() });
   };
 
   const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
-    setIsEventDialogOpen(true);
+    dispatch({ selectedDate: date, isEventDialogOpen: true });
   };
 
   const handleSaveEvent = (newEvent: Omit<CalendarEvent, "id">) => {
@@ -90,45 +104,45 @@ function Calendar() {
       ...newEvent,
       id: crypto.randomUUID(),
     };
-    setEvents([...events, event]);
+    dispatch({ events: [...state.events, event] });
   };
 
   return (
     <div className="flex flex-col h-full p-4">
       <CalendarHeader
-        currentDate={currentDate}
-        view={view}
-        onViewChange={setView}
+        currentDate={state.currentDate}
+        view={state.view}
+        onViewChange={(view) => dispatch({ view })}
         onPrevious={handlePrevious}
         onNext={handleNext}
         onToday={handleToday}
       />
-      {view === "day" && (
+      {state.view === "day" && (
         <DayView
-          date={currentDate}
-          events={events}
+          date={state.currentDate}
+          events={state.events}
           onDateSelect={handleDateSelect}
         />
       )}
-      {view === "week" && (
+      {state.view === "week" && (
         <WeekView
-          date={currentDate}
-          events={events}
+          date={state.currentDate}
+          events={state.events}
           onDateSelect={handleDateSelect}
         />
       )}
-      {view === "month" && (
+      {state.view === "month" && (
         <MonthView
-          date={currentDate}
-          events={events}
+          date={state.currentDate}
+          events={state.events}
           onDateSelect={handleDateSelect}
         />
       )}
       <EventDialog
-        isOpen={isEventDialogOpen}
-        onClose={() => setIsEventDialogOpen(false)}
+        isOpen={state.isEventDialogOpen}
+        onClose={() => dispatch({ isEventDialogOpen: false })}
         onSave={handleSaveEvent}
-        initialDate={selectedDate}
+        initialDate={state.selectedDate}
       />
     </div>
   );

@@ -1,7 +1,5 @@
 import { format, addHours, startOfDay } from "date-fns";
 import { CalendarEvent } from "./calender-types";
-import { Button } from "./ui/button";
-import { Plus } from "lucide-react";
 
 interface DayViewProps {
   date: Date;

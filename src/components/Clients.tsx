@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { AddClientDialog } from "@/components/add-client-dialog";
 import { TagManager } from "@/components/tag-manager";
 import type { Client, Tag } from "@/types/client";
+import { ContactDialog } from "./ContactDialog";
 
 export function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -122,7 +123,8 @@ export function Clients() {
         <h1 className="text-3xl font-bold">Clients</h1>
         <div className="flex gap-2">
           <TagManager tags={tags} onAddTag={handleAddTag} />
-          <AddClientDialog tags={tags} onAddClient={handleAddClient} />
+          {/* <AddClientDialog tags={tags} onAddClient={handleAddClient} /> */}
+          <ContactDialog />
           <Button variant="outline" onClick={exportClients}>
             <Download className="h-4 w-4" />
             Export

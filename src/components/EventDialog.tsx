@@ -45,61 +45,82 @@ type EventDialogProps = {
   initialDate?: Date;
 };
 
+type EventDialogState = {
+  title: string;
+  location: string;
+  startDate: Date | undefined;
+  endDate: Date | undefined;
+  startTime: string;
+  endTime: string;
+  isMultipleDays: boolean;
+};
+
+const eventDialogReducer = (
+  state: EventDialogState,
+  action: Partial<EventDialogState>
+) => ({ ...state, ...action });
+
 export const EventDialog = ({
   isOpen,
   onClose,
   onSave,
   initialDate,
 }: EventDialogProps) => {
-  const [title, setTitle] = React.useState("");
-  const [location, setLocation] = React.useState("");
-  const [startDate, setStartDate] = React.useState<Date | undefined>(
-    initialDate
-  );
-  const [endDate, setEndDate] = React.useState<Date | undefined>(initialDate);
-  const [startTime, setStartTime] = React.useState("09:00");
-  const [endTime, setEndTime] = React.useState("10:00");
-  const [isMultipleDays, setIsMultipleDays] = React.useState(false);
+  console.log(isOpen);
+  const [state, dispatch] = React.useReducer(eventDialogReducer, {
+    title: "",
+    location: "",
+    startDate: initialDate,
+    endDate: initialDate,
+    startTime: "09:00",
+    endTime: "10:00",
+    isMultipleDays: false,
+  });
 
   const handleStartDateChange = (date: Date | undefined) => {
-    setStartDate(date);
-    if (!isMultipleDays && date) {
-      setEndDate(date);
+    dispatch({ startDate: date });
+    if (!state.isMultipleDays && date) {
+      dispatch({ endDate: date });
     }
   };
 
   const isSingleDayEvent =
-    startDate && endDate && isSameDay(startDate, endDate);
+    state.startDate &&
+    state.endDate &&
+    isSameDay(state.startDate, state.endDate);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!startDate || !endDate) return;
+    if (!state.startDate || !state.endDate) return;
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = new Date(state.startDate);
+    const end = new Date(state.endDate);
 
     if (isSingleDayEvent) {
-      const [startHours, startMinutes] = startTime.split(":").map(Number);
-      const [endHours, endMinutes] = endTime.split(":").map(Number);
+      const [startHours, startMinutes] = state.startTime.split(":").map(Number);
+      const [endHours, endMinutes] = state.endTime.split(":").map(Number);
 
       start.setHours(startHours, startMinutes);
       end.setHours(endHours, endMinutes);
     }
 
     onSave({
-      title,
-      location,
+      title: state.title,
+      location: state.location,
       start: start.toISOString(),
       end: end.toISOString(),
     });
 
     // Reset form
-    setTitle("");
-    setLocation("");
-    setStartDate(undefined);
-    setEndDate(undefined);
-    setStartTime("09:00");
-    setEndTime("10:00");
+    dispatch({
+      title: "",
+      location: "",
+      startDate: undefined,
+      endDate: undefined,
+      startTime: "09:00",
+      endTime: "10:00",
+      isMultipleDays: false,
+    });
     onClose();
   };
 
@@ -114,8 +135,8 @@ export const EventDialog = ({
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={state.title}
+              onChange={(e) => dispatch({ title: e.target.value })}
               required
             />
           </div>
@@ -123,19 +144,21 @@ export const EventDialog = ({
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              value={state.location}
+              onChange={(e) => dispatch({ location: e.target.value })}
             />
           </div>
           <div
             className={cn(
               "grid items-center gap-4",
-              isMultipleDays ? "grid-cols-[2fr_1fr_2fr]" : "grid-cols-[5fr_1fr]"
+              state.isMultipleDays
+                ? "grid-cols-[2fr_1fr_2fr]"
+                : "grid-cols-[5fr_1fr]"
             )}
           >
             <div className="space-y-2 flex flex-col items-center">
               <Label className="mr-auto">
-                {isMultipleDays ? "Start Date" : "Date"}
+                {state.isMultipleDays ? "Start Date" : "Date"}
               </Label>
               <Popover>
                 <PopoverTrigger asChild>
@@ -143,12 +166,12 @@ export const EventDialog = ({
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
+                      !state.startDate && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? (
-                      format(startDate, "PPP")
+                    {state.startDate ? (
+                      format(state.startDate, "PPP")
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -157,7 +180,7 @@ export const EventDialog = ({
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={startDate}
+                    selected={state.startDate}
                     onSelect={handleStartDateChange}
                     initialFocus
                   />
@@ -168,13 +191,13 @@ export const EventDialog = ({
             <div className="flex items-center justify-center space-x-2 pt-4">
               <Checkbox
                 id="multiple-days"
-                checked={isMultipleDays}
+                checked={state.isMultipleDays}
                 onCheckedChange={(checked) => {
-                  setIsMultipleDays(checked === true);
-                  if (checked && startDate) {
-                    setEndDate(addDays(startDate, 1));
+                  dispatch({ isMultipleDays: checked === true });
+                  if (checked && state.startDate) {
+                    dispatch({ endDate: addDays(state.startDate, 1) });
                   } else {
-                    setEndDate(startDate);
+                    dispatch({ endDate: state.startDate });
                   }
                 }}
               />
@@ -186,7 +209,7 @@ export const EventDialog = ({
               </Label>
             </div>
 
-            {isMultipleDays && (
+            {state.isMultipleDays && (
               <div className="space-y-2 flex flex-col items-center">
                 <Label className="mr-auto">End Date</Label>
                 <Popover>
@@ -195,12 +218,12 @@ export const EventDialog = ({
                       variant="outline"
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        !endDate && "text-muted-foreground"
+                        !state.endDate && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? (
-                        format(endDate, "PPP")
+                      {state.endDate ? (
+                        format(state.endDate, "PPP")
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -209,8 +232,8 @@ export const EventDialog = ({
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
+                      selected={state.endDate}
+                      onSelect={(date) => dispatch({ endDate: date })}
                       initialFocus
                     />
                   </PopoverContent>
@@ -219,11 +242,14 @@ export const EventDialog = ({
             )}
           </div>
 
-          {!isMultipleDays && (
+          {!state.isMultipleDays && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Start Time</Label>
-                <Select value={startTime} onValueChange={setStartTime}>
+                <Select
+                  value={state.startTime}
+                  onValueChange={(time) => dispatch({ startTime: time })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select start time" />
                   </SelectTrigger>
@@ -231,7 +257,10 @@ export const EventDialog = ({
                     {TIME_OPTIONS.map((time) => (
                       <SelectItem key={time} value={time}>
                         {format(
-                          new Date().setHours(...time.split(":").map(Number)),
+                          new Date().setHours(
+                            Number(time.split(":")[0]),
+                            Number(time.split(":")[1])
+                          ),
                           "h:mm a"
                         )}
                       </SelectItem>
@@ -241,7 +270,10 @@ export const EventDialog = ({
               </div>
               <div className="space-y-2">
                 <Label>End Time</Label>
-                <Select value={endTime} onValueChange={setEndTime}>
+                <Select
+                  value={state.endTime}
+                  onValueChange={(time) => dispatch({ endTime: time })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select end time" />
                   </SelectTrigger>
@@ -249,7 +281,10 @@ export const EventDialog = ({
                     {TIME_OPTIONS.map((time) => (
                       <SelectItem key={time} value={time}>
                         {format(
-                          new Date().setHours(...time.split(":").map(Number)),
+                          new Date().setHours(
+                            Number(time.split(":")[0]),
+                            Number(time.split(":")[1])
+                          ),
                           "h:mm a"
                         )}
                       </SelectItem>
